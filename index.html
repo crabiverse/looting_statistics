@@ -78,7 +78,7 @@
 
             <p id="resuls_text"></p>
             <br>
-            <div style="margin: auto;height:15vh; width:30vw">
+            <div id = "chart_container" style="margin: auto;height:15vh; width:30vw">
                 <canvas id="tus_revenue_chart"></canvas>
             </div>
 
@@ -100,7 +100,6 @@
         let wallet = document.getElementById("wallet");
 
         let parameterwaller = GetURLParameter('wallet');
-        console.log(parameterwaller)
         if (parameterwaller != null) {
             wallet.setAttribute("value", parameterwaller);
             calculate()
@@ -232,7 +231,6 @@
                         }
                     });
 
-
             }).catch(function (error) {
                 console.log(error);
             });
@@ -241,6 +239,11 @@
     function clearForm() {
         let resuls_text = document.getElementById("resuls_text");
         let results = document.getElementById("results");
+
+        document.getElementById( "tus_revenue_chart" ).remove();
+        let canvas = document.createElement('canvas');
+        canvas.setAttribute('id','tus_revenue_chart');
+        document.querySelector('#chart_container').appendChild(canvas);
 
         resuls_text.innerHTML = "";
         results.style.display = "none";
