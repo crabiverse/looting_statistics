@@ -85,10 +85,27 @@
         </div>
 </body>
 <script type="text/javascript">
+    function GetURLParameter(sParam) {
+        const sPageURL = window.location.search.substring(1);
+        const sURLVariables = sPageURL.split('&');
+        for (let i = 0; i < sURLVariables.length; i++) {
+            const sParameterName = sURLVariables[i].split('=');
+            if (sParameterName[0] == sParam) {
+                return sParameterName[1];
+            }
+        }
+    }
 
     function checkSettings() {
         let wallet = document.getElementById("wallet");
-        if (localStorage.getItem("wallet") != null) {
+
+        let parameterwaller = GetURLParameter('wallet');
+        console.log(parameterwaller)
+        if (parameterwaller != null) {
+            wallet.setAttribute("value", parameterwaller);
+            calculate()
+        }
+        else if (localStorage.getItem("wallet") != null) {
             wallet.setAttribute("value", localStorage.getItem("wallet"));
         }
         else {
@@ -99,6 +116,14 @@
     function calculate() {
         clearForm()
         let wallet = document.getElementById("wallet").value;
+
+        let results = document.getElementById("results");
+        results.style.display = "block";
+        let resuls_text = document.getElementById("resuls_text");
+
+        localStorage.setItem("wallet", wallet);
+
+
         const totalByDay = {}
         const totalByTeam = {}
         let totalTUS = 0
@@ -109,6 +134,12 @@
         fetch(`https://idle-api.crabada.com/public/idle/mines?looter_address=${wallet}&status=close&limit=1000`).then(response => response.json())
             .then(function (response) {
                 const loots = response["result"]["data"]
+
+                if (loots.length == 0) {
+                    resuls_text.innerHTML += `You didn't loot yet. Go loot!`
+                    return
+                }
+
                 loots.forEach(t => {
 
                     const looter_cra_reward = t.looter_cra_reward
@@ -140,22 +171,33 @@
 
                 })
 
-                localStorage.setItem("wallet", wallet);
-                let results = document.getElementById("results");
-                results.style.display = "block";
 
-                dailyAvgTUS = totalTUS / Object.keys(totalByDay).length
-                dailyAvgCRA = totalCRA / Object.keys(totalByDay).length
-                dailyAvgLoots = totalLoots / Object.keys(totalByDay).length
-                dailyAvgWins = totalWins / Object.keys(totalByDay).length
-                dailyAvgLosses = totalLosses / Object.keys(totalByDay).length
+                let today = new Date()
+                today = today.toISOString().split('T')[0]
+
+
+                number_for_avg = today in totalByDay ? Object.keys(totalByDay).length - 1 : Object.keys(totalByDay).length
+                number_for_avg = number_for_avg > 0 ? number_for_avg : 1
+
+                dailyAvgTUS = totalTUS / number_for_avg
+                dailyAvgCRA = totalCRA / number_for_avg
+                dailyAvgLoots = totalLoots / number_for_avg
+                dailyAvgWins = totalWins / number_for_avg
+                dailyAvgLosses = totalLosses / number_for_avg
 
                 dailyMax = Object.keys(totalByDay).reduce(function (a, b) { return totalByDay[a].tus > totalByDay[b].tus ? a : b });
 
+                resuls_text.innerHTML += `Total revenue: ${(totalTUS / 1.0e18).toFixed(4)} TUS and ${(totalCRA / 1.0e18).toFixed(4)} CRA</br>`
 
 
-                let resuls_text = document.getElementById("resuls_text");
-                resuls_text.innerHTML = `Total revenue: ${(totalTUS / 1.0e18).toFixed(4)} TUS and ${(totalCRA / 1.0e18).toFixed(4)} CRA</br>`
+                if (today in totalByDay) {
+                    resuls_text.innerHTML += `Today's revenue: ${(totalByDay[today].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDay[today].cra / 1.0e18).toFixed(4)} CRA (${today} - ${totalByDay[today].loots} loots)</br>`;
+                    resuls_text.innerHTML += `Today's loots: ${totalByDay[today].loots} being ${totalByDay[today].wins} wins and ${totalByDay[today].losses} losses (${Math.round(100 * totalByDay[today].wins / (totalByDay[today].loots))}% win rate)</br>`;
+                } else {
+                    resuls_text.innerHTML += `No looting activity today. Go loot!</br>`;
+
+                }
+
                 resuls_text.innerHTML += `Average revenue per day: ${(dailyAvgTUS / 1.0e18).toFixed(4)} TUS and ${(dailyAvgCRA / 1.0e18).toFixed(4)} CRA</br>`;
                 resuls_text.innerHTML += `Best day: ${(totalByDay[dailyMax].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDay[dailyMax].cra / 1.0e18).toFixed(4)} CRA (${dailyMax} - ${totalByDay[dailyMax].loots} loots)</br>`;
                 resuls_text.innerHTML += `Total loots: ${totalLoots} being ${totalWins} wins and ${totalLosses} losses (${Math.round(100 * totalWins / (totalLoots))}% win rate)</br>`;
