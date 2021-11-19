@@ -80,8 +80,8 @@ function calculate() {
             const loots = response["result"]["data"]
             loots.forEach(t => {
 
-                const looter_cra_reward = Math.round(t.looter_cra_reward/1.0e18)
-                const looter_tus_reward = Math.round(t.looter_tus_reward/1.0e18)
+                const looter_cra_reward = t.looter_cra_reward
+                const looter_tus_reward = t.looter_tus_reward
                 const date = new Date(t.end_time*1000)
                 const day = date.toISOString().split('T')[0]
                 if(!(day in totalByDay)){
@@ -113,29 +113,29 @@ function calculate() {
             let results = document.getElementById("results");
 	        results.style.display = "block";
 
-            dailyAvgTUS = Math.round(totalTUS/Object.keys(totalByDay).length, 1)
-            dailyAvgCRA = Math.round(totalCRA/Object.keys(totalByDay).length, 1)
-            dailyAvgLoots = Math.round(totalLoots/Object.keys(totalByDay).length, 1)
-            dailyAvgWins = Math.round(totalWins/Object.keys(totalByDay).length, 1)
-            dailyAvgLosses = Math.round(totalLosses/Object.keys(totalByDay).length, 1)
+            dailyAvgTUS = totalTUS/Object.keys(totalByDay).length
+            dailyAvgCRA = totalCRA/Object.keys(totalByDay).length
+            dailyAvgLoots = totalLoots/Object.keys(totalByDay).length
+            dailyAvgWins = totalWins/Object.keys(totalByDay).length
+            dailyAvgLosses =totalLosses/Object.keys(totalByDay).length
 
             dailyMax = Object.keys(totalByDay).reduce(function(a, b){ return totalByDay[a].tus > totalByDay[b].tus ? a : b });
 
 
 
             let resuls_text = document.getElementById("resuls_text");
-            resuls_text.innerHTML = `Total revenue: ${totalTUS} TUS and ${totalCRA} CRA</br>`
-            resuls_text.innerHTML += `Average revenue per day: ${dailyAvgTUS} TUS and ${dailyAvgCRA} CRA</br>`;
-            resuls_text.innerHTML += `Best day: ${totalByDay[dailyMax].tus} TUS and ${totalByDay[dailyMax].cra} CRA (${dailyMax} - ${totalByDay[dailyMax].loots} loots)</br>`;
+            resuls_text.innerHTML = `Total revenue: ${(totalTUS/1.0e18).toFixed(4)} TUS and ${(totalCRA/1.0e18).toFixed(4)} CRA</br>`
+            resuls_text.innerHTML += `Average revenue per day: ${(dailyAvgTUS/1.0e18).toFixed(4)} TUS and ${(dailyAvgCRA/1.0e18).toFixed(4)} CRA</br>`;
+            resuls_text.innerHTML += `Best day: ${(totalByDay[dailyMax].tus/1.0e18).toFixed(4)} TUS and ${(totalByDay[dailyMax].cra/1.0e18).toFixed(4)} CRA (${dailyMax} - ${totalByDay[dailyMax].loots} loots)</br>`;
             resuls_text.innerHTML += `Total loots: ${totalLoots} being ${totalWins} wins and ${totalLosses} losses (${Math.round(100*totalWins/(totalLoots))}% win rate)</br>`;
-            resuls_text.innerHTML += `Average loots per day: ${dailyAvgLoots} being on average ${dailyAvgWins} wins and ${dailyAvgLosses} losses (${Math.round(100*dailyAvgWins/(dailyAvgLoots))}% win rate)</br>`;
+            resuls_text.innerHTML += `Average loots per day: ${dailyAvgLoots.toFixed(1)} being on average ${dailyAvgWins.toFixed(1)} wins and ${dailyAvgLosses.toFixed(1)} losses (${Math.round(100*dailyAvgWins/(dailyAvgLoots))}% win rate)</br>`;
 
             resuls_text.innerHTML += `</br>Daily stats:</br>`
 
             Object.keys(totalByDay).sort(function(a, b) {
                 return moment(b, 'YYYY-MM-DD').toDate() - moment(a, 'YYYY-MM-DD').toDate();
             }).forEach(function(key) {
-                resuls_text.innerHTML += `${key} - ${totalByDay[key].tus} TUS - ${totalByDay[key].cra} CRA - ${totalByDay[key].loots} loots (${Math.round(100*totalByDay[key].wins/(totalByDay[key].loots))}% win rate)</br>`;
+                resuls_text.innerHTML += `${key} - ${(totalByDay[key].tus/1.0e18).toFixed(4)} TUS - ${(totalByDay[key].cra/1.0e18).toFixed(4)} CRA - ${totalByDay[key].loots} loots (${Math.round(100*totalByDay[key].wins/(totalByDay[key].loots))}% win rate)</br>`;
             })
 
                         
