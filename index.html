@@ -51,6 +51,10 @@ html, body {
 
     <p id="resuls_text"></p>
 	<br>
+    <div style="margin: auto;height:15vh; width:30vw">
+        <canvas id="tus_revenue_chart" ></canvas>
+    </div>
+
 	</div>
 </body>
 <script type="text/javascript">
@@ -132,11 +136,32 @@ function calculate() {
 
             resuls_text.innerHTML += `</br>Daily stats:</br>`
 
+            const labels = []
+            const data_values = []
             Object.keys(totalByDay).sort(function(a, b) {
                 return moment(b, 'YYYY-MM-DD').toDate() - moment(a, 'YYYY-MM-DD').toDate();
-            }).forEach(function(key) {
+            }).reverse().forEach(function(key) {
+                labels.push(key)
+                data_values.push((totalByDay[key].tus/1.0e18).toFixed(4))
                 resuls_text.innerHTML += `${key} - ${(totalByDay[key].tus/1.0e18).toFixed(4)} TUS - ${(totalByDay[key].cra/1.0e18).toFixed(4)} CRA - ${totalByDay[key].loots} loots (${Math.round(100*totalByDay[key].wins/(totalByDay[key].loots))}% win rate)</br>`;
             })
+
+            const data = {
+                labels: labels,
+                datasets: [{
+                    label: 'TUS Revenue per day',
+                    backgroundColor: 'rgb(255, 99, 132)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    data: data_values,
+                }]
+            };
+            var chart = new Chart(document.getElementById('tus_revenue_chart').getContext('2d'), 
+            {
+                type: 'line',
+                data: data,
+                options: {
+                }
+            });
 
                         
         }).catch(function (error) {
