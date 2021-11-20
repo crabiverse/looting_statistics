@@ -75,7 +75,7 @@
             <br></br>
             <h3> Results </h3>
             <p id="loading">Loading...</p>
-            <p id="resuls_text"></p>
+            <div id="resuls_text"></div>
             <br>
             <div id = "chart_container" style="margin: auto;height:15vh; width:30vw">
                 <canvas id="tus_revenue_chart"></canvas>
@@ -228,13 +228,13 @@
                         data: data_values,
                     }]
                 };
-                var chart = new Chart(document.getElementById('tus_revenue_chart').getContext('2d'),
+                const chart = new Chart(document.getElementById('tus_revenue_chart').getContext('2d'),
                     {
                         type: 'line',
                         data: data,
                         options: {
                         }
-                    });
+                });
 
             }).catch(function (error) {
                 console.log(error);
