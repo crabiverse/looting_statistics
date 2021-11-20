@@ -138,7 +138,7 @@
                     resuls_text.innerHTML += `You didn't loot yet. Go loot!`
                     return
                 }
-
+                let teams = []
                 loots.forEach(t => {
 
                     const looter_cra_reward = t.looter_cra_reward
@@ -152,6 +152,9 @@
                         totalByDay[day].loots = 0
                         totalByDay[day].wins = 0
                         totalByDay[day].losses = 0
+                    }
+                    if(!teams.includes(t.attack_team_id)){
+                        teams.push(t.attack_team_id)
                     }
                     totalByDay[day].cra += looter_cra_reward
                     totalByDay[day].tus += looter_tus_reward
@@ -203,7 +206,7 @@
                 resuls_text.innerHTML += `Worst day: ${(totalByDay[dailyMin].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDay[dailyMin].cra / 1.0e18).toFixed(4)} CRA (${dailyMin} - ${totalByDay[dailyMin].loots} loots)</br>`;
                 resuls_text.innerHTML += `Total loots: ${totalLoots} being ${totalWins} wins and ${totalLosses} losses (${Math.round(100 * totalWins / (totalLoots))}% win rate)</br>`;
                 resuls_text.innerHTML += `Average loots per day: ${dailyAvgLoots.toFixed(1)} being on average ${dailyAvgWins.toFixed(1)} wins and ${dailyAvgLosses.toFixed(1)} losses (${Math.round(100 * dailyAvgWins / (dailyAvgLoots))}% win rate)</br>`;
-
+                resuls_text.innerHTML += `Number of teams: ${teams.length}</br>`
                 resuls_text.innerHTML += `</br>Daily stats:</br>`
 
                 const labels = []
