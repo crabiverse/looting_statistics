@@ -3,7 +3,6 @@
 
 <head>
     <title>Looting statistics</title>
-    <meta name="author" content="Jacky Ly">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
@@ -75,7 +74,7 @@
         <div id="results" style="display: none">
             <br></br>
             <h3> Results </h3>
-
+            <p id="loading">Loading...</p>
             <p id="resuls_text"></p>
             <br>
             <div id = "chart_container" style="margin: auto;height:15vh; width:30vw">
@@ -115,7 +114,8 @@
     function calculate() {
         clearForm()
         let wallet = document.getElementById("wallet").value;
-
+        let loading = document.getElementById("loading");
+        
         let results = document.getElementById("results");
         results.style.display = "block";
         let resuls_text = document.getElementById("resuls_text");
@@ -130,7 +130,7 @@
         let totalLoots = 0
         let totalWins = 0
         let totalLosses = 0
-        fetch(`https://idle-api.crabada.com/public/idle/mines?looter_address=${wallet}&status=close&limit=1000`).then(response => response.json())
+        fetch(`https://idle-api.crabada.com/public/idle/mines?looter_address=${wallet}&status=close&limit=5000`).then(response => response.json())
             .then(function (response) {
                 const loots = response["result"]["data"]
 
@@ -170,7 +170,7 @@
 
                 })
 
-
+                loading.innerHTML = "";
                 let today = new Date()
                 today = today.toISOString().split('T')[0]
 
@@ -184,7 +184,8 @@
                 dailyAvgWins = totalWins / number_for_avg
                 dailyAvgLosses = totalLosses / number_for_avg
 
-                dailyMax = Object.keys(totalByDay).reduce(function (a, b) { return totalByDay[a].tus > totalByDay[b].tus ? a : b });
+                dailyMax = Object.keys(totalByDay).reduce((a, b) => totalByDay[a].tus > totalByDay[b].tus ? a : b);
+                dailyMin = Object.keys(totalByDay).filter(v => v != today).reduce( (a, b) => totalByDay[a].tus < totalByDay[b].tus ? a : b);
 
                 resuls_text.innerHTML += `Total revenue: ${(totalTUS / 1.0e18).toFixed(4)} TUS and ${(totalCRA / 1.0e18).toFixed(4)} CRA</br>`
 
@@ -199,6 +200,7 @@
 
                 resuls_text.innerHTML += `Average revenue per day: ${(dailyAvgTUS / 1.0e18).toFixed(4)} TUS and ${(dailyAvgCRA / 1.0e18).toFixed(4)} CRA</br>`;
                 resuls_text.innerHTML += `Best day: ${(totalByDay[dailyMax].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDay[dailyMax].cra / 1.0e18).toFixed(4)} CRA (${dailyMax} - ${totalByDay[dailyMax].loots} loots)</br>`;
+                resuls_text.innerHTML += `Worst day: ${(totalByDay[dailyMin].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDay[dailyMin].cra / 1.0e18).toFixed(4)} CRA (${dailyMin} - ${totalByDay[dailyMin].loots} loots)</br>`;
                 resuls_text.innerHTML += `Total loots: ${totalLoots} being ${totalWins} wins and ${totalLosses} losses (${Math.round(100 * totalWins / (totalLoots))}% win rate)</br>`;
                 resuls_text.innerHTML += `Average loots per day: ${dailyAvgLoots.toFixed(1)} being on average ${dailyAvgWins.toFixed(1)} wins and ${dailyAvgLosses.toFixed(1)} losses (${Math.round(100 * dailyAvgWins / (dailyAvgLoots))}% win rate)</br>`;
 
@@ -247,6 +249,10 @@
 
         resuls_text.innerHTML = "";
         results.style.display = "none";
+    
+        let loading = document.getElementById("loading");
+        loading.innerHTML = "Loading...";
+
     }
 
 </script>
