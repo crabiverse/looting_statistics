@@ -78,11 +78,12 @@
             <p id="loading">Loading...</p>
             <div id="resuls_text"></div>
             <br>
-            <div id = "chart_container" style="margin: auto;height:15vh; width:30vw">
+            <div id="chart_container" style="margin: auto;height:15vh; width:30vw">
                 <canvas id="tus_revenue_chart"></canvas>
             </div>
 
         </div>
+    </div>
 </body>
 <script type="text/javascript">
     function GetURLParameter(sParam) {
@@ -116,7 +117,7 @@
         clearForm()
         let wallet = document.getElementById("wallet").value;
         let loading = document.getElementById("loading");
-        
+
         let results = document.getElementById("results");
         results.style.display = "block";
         let resuls_text = document.getElementById("resuls_text");
@@ -154,7 +155,7 @@
                         totalByDay[day].wins = 0
                         totalByDay[day].losses = 0
                     }
-                    if(!teams.includes(t.attack_team_id)){
+                    if (!teams.includes(t.attack_team_id)) {
                         teams.push(t.attack_team_id)
                     }
                     totalByDay[day].cra += looter_cra_reward
@@ -189,7 +190,7 @@
                 dailyAvgLosses = totalLosses / number_for_avg
 
                 dailyMax = Object.keys(totalByDay).reduce((a, b) => totalByDay[a].tus > totalByDay[b].tus ? a : b);
-                dailyMin = Object.keys(totalByDay).filter(v => v != today).reduce( (a, b) => totalByDay[a].tus < totalByDay[b].tus ? a : b);
+                dailyMin = Object.keys(totalByDay).filter(v => v != today).reduce((a, b) => totalByDay[a].tus < totalByDay[b].tus ? a : b);
 
                 resuls_text.innerHTML += `Total revenue: ${(totalTUS / 1.0e18).toFixed(4)} TUS and ${(totalCRA / 1.0e18).toFixed(4)} CRA</br>`
 
@@ -235,7 +236,7 @@
                         data: data,
                         options: {
                         }
-                });
+                    });
 
             }).catch(function (error) {
                 console.log(error);
@@ -246,14 +247,14 @@
         let resuls_text = document.getElementById("resuls_text");
         let results = document.getElementById("results");
 
-        document.getElementById( "tus_revenue_chart" ).remove();
+        document.getElementById("tus_revenue_chart").remove();
         let canvas = document.createElement('canvas');
-        canvas.setAttribute('id','tus_revenue_chart');
+        canvas.setAttribute('id', 'tus_revenue_chart');
         document.querySelector('#chart_container').appendChild(canvas);
 
         resuls_text.innerHTML = "";
         results.style.display = "none";
-    
+
         let loading = document.getElementById("loading");
         loading.innerHTML = "Loading...";
 
