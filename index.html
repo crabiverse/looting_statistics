@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Looting statistics</title>
+    <title>Revenue statistics</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@^3"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
@@ -55,16 +55,14 @@
 
 <body onload="checkSettings();">
     <ul class="nav">
-        <li><a href="https://crabada-resources.github.io/pure_sniping/">Pure Sniping</a></li>
+        <li><a href="https://crabada-resources.github.io/pure_sniping/">Crab Finder</a></li>
         <li><a href="https://crabada-resources.github.io/should_i_buy/">Should I buy this crab?</a></li>
-        <li><a href="https://crabada-resources.github.io/tavern_statistics/">Tavern Statistics</a></li>
         <li><a href="https://crabada-resources.github.io/breeding_calculator/">Breeding calculator</a></li>
-        <li><a href="https://crabada-resources.github.io/search_stats/">Search by stats</a></li>
     </ul>
 
 
     <div id="header">
-        <h2>Looting revenue statistics</h2>
+        <h2>Revenue statistics</h2>
         <br></br>
         <form id="crabs_settings" onsubmit="return false">
             Enter your wallet ID: &nbsp;&nbsp; <input id="wallet" style="width: 20em" />
@@ -78,12 +76,18 @@
             <br></br>
             <h3> Results </h3>
             <p id="loading">Loading...</p>
-            <div id="resuls_text"></div>
-            <br>
-            <div id="chart_container" style="margin: auto;height:15vh; width:30vw">
-                <canvas id="tus_revenue_chart"></canvas>
+            <div id="results_text_loot"></div>
+            <div id="chart_container_loot" style="margin: auto; padding-top: 2%; padding-bottom: 2%; width:30vw">
+                <canvas id="tus_revenue_chart_loot"></canvas>
             </div>
-
+            <div id="results_text_mine"></div>
+            <div id="chart_container_mine" style="margin: auto; padding-top: 2%; padding-bottom: 2%;  width:30vw">
+                <canvas id="tus_revenue_chart_mine"></canvas>
+            </div>
+            <div id="results_text_tavern"></div>
+            <div id="chart_container_tavern" style="margin: auto; padding-top: 2%; padding-bottom: 2%;  width:30vw">
+                <canvas id="tus_revenue_chart_tavern"></canvas>
+            </div>
         </div>
     </div>
 </body>
@@ -122,147 +126,433 @@
 
         let results = document.getElementById("results");
         results.style.display = "block";
-        let resuls_text = document.getElementById("resuls_text");
+        let results_text_loot = document.getElementById("results_text_loot");
+        results_text_loot.innerHTML = ''
+
+        let results_text_mine = document.getElementById("results_text_mine");
+        results_text_mine.innerHTML = ''
+
+        let results_text_tavern = document.getElementById("results_text_tavern");
+        results_text_tavern.innerHTML = ''
 
         localStorage.setItem("wallet", wallet);
 
-
-        const totalByDay = {}
-        const totalByTeam = {}
-        let totalTUS = 0
-        let totalCRA = 0
+        const totalByDayLoot = {}
+        let totalTUSLoot = 0
+        let totalCRALoot = 0
         let totalLoots = 0
-        let totalWins = 0
-        let totalLosses = 0
-        fetch(`https://idle-api.crabada.com/public/idle/mines?looter_address=${wallet}&status=close&limit=5000`).then(response => response.json())
-            .then(function (response) {
-                const loots = response["result"]["data"]
+        let totalWinsLoot = 0
+        let totalLossesLoot = 0
+        let teamsLoot = []
+        const totalByDayMine = {}
+        let totalTUSMine = 0
+        let totalCRAMine = 0
+        let totalMines = 0
+        let totalWinsMine = 0
+        let totalLossesMine = 0
+        let teamsMine = []
+
+        let rentcrabsid = []
+        let totalTUSRent = 0
+        let totalRents = 0
+        const totalByDayRent = {}
+
+        requests = []
+        requests.push(fetch(`https://idle-api.crabada.com/public/idle/mines?looter_address=${wallet}&status=close&limit=10000`).then(response => response.json()))
+        requests.push(fetch(`https://idle-api.crabada.com/public/idle/mines?user_address=${wallet}&status=close&limit=10000`).then(response => response.json()))
+        requests.push(fetch(`https://idle-api.crabada.com/public/idle/crabadas/out-game?user_address=${wallet}&order=desc&limit=10000`).then(response => response.json()))
+        requests.push(fetch(`https://idle-api.crabada.com/public/idle/crabadas/for-lending?user_address=${wallet}&limit=10000`).then(response => response.json()))
+        requests.push(fetch(`https://idle-api.crabada.com/public/idle/teams?user_address=${wallet}`).then(response => response.json()))
+
+        Promise.all(requests)
+            .then(function (responses) {
+                const loots = responses[0]["result"]["data"]
 
                 if (loots.length == 0) {
-                    resuls_text.innerHTML += `You didn't loot yet. Go loot!`
-                    return
+                    results_text_loot.innerHTML += '<h4>Looting</h4>'
+                    results_text_loot.innerHTML += `You didn't loot yet. Go loot!`
                 }
-                let teams = []
-                loots.forEach(t => {
+                else {
 
-                    const looter_cra_reward = t.looter_cra_reward
-                    const looter_tus_reward = t.looter_tus_reward
-                    const date = new Date(t.end_time * 1000)
-                    const day = date.toISOString().split('T')[0]
-                    if (!(day in totalByDay)) {
-                        totalByDay[day] = {}
-                        totalByDay[day].cra = 0
-                        totalByDay[day].tus = 0
-                        totalByDay[day].loots = 0
-                        totalByDay[day].wins = 0
-                        totalByDay[day].losses = 0
-                    }
-                    if (!teams.includes(t.attack_team_id)) {
-                        teams.push(t.attack_team_id)
-                    }
-                    totalByDay[day].cra += looter_cra_reward
-                    totalByDay[day].tus += looter_tus_reward
-                    totalByDay[day].loots += 1
-                    totalTUS += looter_tus_reward
-                    totalCRA += looter_cra_reward
-                    totalLoots += 1
-                    if (t.attack_team_id == t.winner_team_id) {
-                        totalWins += 1
-                        totalByDay[day].wins += 1
+                    loots.forEach(t => {
 
-                    } else {
-                        totalLosses += 1
-                        totalByDay[day].losses += 1
-                    }
+                        const looter_cra_reward = t.looter_cra_reward
+                        const looter_tus_reward = t.looter_tus_reward
+                        const date = new Date(t.end_time * 1000)
+                        const day = date.toISOString().split('T')[0]
+                        if (!(day in totalByDayLoot)) {
+                            totalByDayLoot[day] = {}
+                            totalByDayLoot[day].cra = 0
+                            totalByDayLoot[day].tus = 0
+                            totalByDayLoot[day].loots = 0
+                            totalByDayLoot[day].wins = 0
+                            totalByDayLoot[day].losses = 0
+                        }
+                        if (!teamsLoot.includes(t.attack_team_id)) {
+                            teamsLoot.push(t.attack_team_id)
+                        }
+                        totalByDayLoot[day].cra += looter_cra_reward
+                        totalByDayLoot[day].tus += looter_tus_reward
+                        totalByDayLoot[day].loots += 1
+                        totalTUSLoot += looter_tus_reward
+                        totalCRALoot += looter_cra_reward
+                        totalLoots += 1
+                        if (t.attack_team_id == t.winner_team_id) {
+                            totalWinsLoot += 1
+                            totalByDayLoot[day].wins += 1
 
-                })
+                        } else {
+                            totalLossesLoot += 1
+                            totalByDayLoot[day].losses += 1
+                        }
 
-                loading.innerHTML = "";
-                let today = new Date()
-                today = today.toISOString().split('T')[0]
-
-
-                number_for_avg = today in totalByDay ? Object.keys(totalByDay).length - 1 : Object.keys(totalByDay).length
-                number_for_avg = number_for_avg > 0 ? number_for_avg : 1
-
-                dailyAvgTUS = totalTUS / number_for_avg
-                dailyAvgCRA = totalCRA / number_for_avg
-                dailyAvgLoots = totalLoots / number_for_avg
-                dailyAvgWins = totalWins / number_for_avg
-                dailyAvgLosses = totalLosses / number_for_avg
-
-                dailyMax = Object.keys(totalByDay).reduce((a, b) => totalByDay[a].tus > totalByDay[b].tus ? a : b);
-                dailyMin = Object.keys(totalByDay).filter(v => v != today).reduce((a, b) => totalByDay[a].tus < totalByDay[b].tus ? a : b);
-
-                resuls_text.innerHTML += `Total revenue: ${(totalTUS / 1.0e18).toFixed(4)} TUS and ${(totalCRA / 1.0e18).toFixed(4)} CRA</br>`
-
-
-                if (today in totalByDay) {
-                    resuls_text.innerHTML += `Today's revenue: ${(totalByDay[today].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDay[today].cra / 1.0e18).toFixed(4)} CRA (${today} - ${totalByDay[today].loots} loots)</br>`;
-                    resuls_text.innerHTML += `Today's loots: ${totalByDay[today].loots} being ${totalByDay[today].wins} wins and ${totalByDay[today].losses} losses (${Math.round(100 * totalByDay[today].wins / (totalByDay[today].loots))}% win rate)</br>`;
-                } else {
-                    resuls_text.innerHTML += `No looting activity today. Go loot!</br>`;
-
+                    })
                 }
 
-                resuls_text.innerHTML += `Average revenue per day: ${(dailyAvgTUS / 1.0e18).toFixed(4)} TUS and ${(dailyAvgCRA / 1.0e18).toFixed(4)} CRA</br>`;
-                resuls_text.innerHTML += `Best day: ${(totalByDay[dailyMax].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDay[dailyMax].cra / 1.0e18).toFixed(4)} CRA (${dailyMax} - ${totalByDay[dailyMax].loots} loots)</br>`;
-                resuls_text.innerHTML += `Worst day: ${(totalByDay[dailyMin].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDay[dailyMin].cra / 1.0e18).toFixed(4)} CRA (${dailyMin} - ${totalByDay[dailyMin].loots} loots)</br>`;
-                resuls_text.innerHTML += `Total loots: ${totalLoots} being ${totalWins} wins and ${totalLosses} losses (${Math.round(100 * totalWins / (totalLoots))}% win rate)</br>`;
-                resuls_text.innerHTML += `Average loots per day: ${dailyAvgLoots.toFixed(1)} being on average ${dailyAvgWins.toFixed(1)} wins and ${dailyAvgLosses.toFixed(1)} losses (${Math.round(100 * dailyAvgWins / (dailyAvgLoots))}% win rate)</br>`;
-                resuls_text.innerHTML += `Number of teams: ${teams.length}</br>`
-                resuls_text.innerHTML += `</br>Daily stats:</br>`
+                const mines = responses[1]["result"]["data"]
 
-                const labels = []
-                const data_values = []
-                Object.keys(totalByDay).sort(function (a, b) {
-                    return moment(b, 'YYYY-MM-DD').toDate() - moment(a, 'YYYY-MM-DD').toDate();
-                }).reverse().forEach(function (key) {
-                    labels.push(key)
-                    data_values.push((totalByDay[key].tus / 1.0e18).toFixed(4))
-                    resuls_text.innerHTML += `${key} - ${(totalByDay[key].tus / 1.0e18).toFixed(4)} TUS - ${(totalByDay[key].cra / 1.0e18).toFixed(4)} CRA - ${totalByDay[key].loots} loots (${Math.round(100 * totalByDay[key].wins / (totalByDay[key].loots))}% win rate)</br>`;
+                if (mines.length == 0) {
+                    results_text_mine.innerHTML += '<h4>Mining</h4>'
+                    results_text_mine.innerHTML += `You didn't mine yet. Go mine!`
+                }
+                else {
+                    mines.forEach(t => {
+
+                        const miner_cra_reward = t.miner_cra_reward
+                        const miner_tus_reward = t.miner_tus_reward
+                        const date = new Date(t.end_time * 1000)
+                        const day = date.toISOString().split('T')[0]
+                        if (!(day in totalByDayMine)) {
+                            totalByDayMine[day] = {}
+                            totalByDayMine[day].cra = 0
+                            totalByDayMine[day].tus = 0
+                            totalByDayMine[day].mines = 0
+                            totalByDayMine[day].wins = 0
+                            totalByDayMine[day].losses = 0
+                        }
+                        if (!teamsMine.includes(t.attack_team_id)) {
+                            teamsMine.push(t.attack_team_id)
+                        }
+                        totalByDayMine[day].cra += miner_cra_reward
+                        totalByDayMine[day].tus += miner_tus_reward
+                        totalByDayMine[day].mines += 1
+                        totalTUSMine += miner_tus_reward
+                        totalCRAMine += miner_cra_reward
+                        totalMines += 1
+                        if (t.attack_team_id != t.winner_team_id) {
+                            totalWinsMine += 1
+                            totalByDayMine[day].wins += 1
+
+                        } else {
+                            totalLossesMine += 1
+                            totalByDayMine[day].losses += 1
+                        }
+
+                    })
+                }
+
+
+                const outofgame = responses[2]["result"]["data"]
+                if (outofgame.length > 0) {
+                    outofgame.forEach(c => {
+                        rentcrabsid.push(c.crabada_id)
+                    })
+
+                }
+
+                const forlending = responses[3]["result"]["data"]
+                if (forlending.length > 0) {
+                    forlending.forEach(c => {
+                        rentcrabsid.push(c.crabada_id)
+                    })
+
+                }
+
+                const crabsinteams = responses[4]["result"]["data"]
+                if (crabsinteams.length > 0) {
+                    crabsinteams.forEach(c => {
+                        if (c.crabada_id_1) {
+                            rentcrabsid.push(c.crabada_id_1)
+                        }
+                        if (c.crabada_id_2) {
+                            rentcrabsid.push(c.crabada_id_2)
+                        }
+                        if (c.crabada_id_3) {
+                            rentcrabsid.push(c.crabada_id_3)
+                        }
+                    })
+
+                }
+
+                requestscrab = []
+                rentcrabsid.forEach(id => {
+                    requestscrab.push(fetch(`https://idle-api.crabada.com/public/idle/crabadas/lending/history?crabada_id=${id}&limit=10000`).then(response => response.json()))
                 })
 
-                const data = {
-                    labels: labels,
-                    datasets: [{
-                        label: 'TUS Revenue per day',
-                        backgroundColor: 'rgb(255, 99, 132)',
-                        borderColor: 'rgb(255, 99, 132)',
-                        data: data_values,
-                    }]
-                };
-                const chart = new Chart(document.getElementById('tus_revenue_chart').getContext('2d'),
-                    {
-                        type: 'bar',
-                        data: data,
-                        options: {
-                            scales: {
-                                x: {
-                                    type: 'time',
-                                    time: {
-                                        unit: 'day'
+                Promise.all(requestscrab)
+                    .then(function (responses) {
+                        responses.forEach(response => {
+                            const transactions = response["result"]["data"]
+                            transactions.forEach(t => {
+                                const price = t.price
+                                totalTUSRent += price
+                                totalRents += 1
+                                const date = new Date(t.transaction_time * 1000)
+                                const day = date.toISOString().split('T')[0]
+                                if (!(day in totalByDayRent)) {
+                                    totalByDayRent[day] = {}
+                                    totalByDayRent[day].tus = 0
+                                    totalByDayRent[day].rents = 0
+                                }
+                                totalByDayRent[day].tus += price
+                                totalByDayRent[day].rents += 1
+
+                            })
+
+                        })
+
+                        loading.innerHTML = "";
+                        let today = new Date()
+                        today = today.toISOString().split('T')[0]
+
+
+                        number_for_avg = today in totalByDayLoot ? Object.keys(totalByDayLoot).length - 1 : Object.keys(totalByDayLoot).length
+                        number_for_avg = number_for_avg > 0 ? number_for_avg : 1
+
+                        dailyAvgTUS = totalTUSLoot / number_for_avg
+                        dailyAvgCRA = totalCRALoot / number_for_avg
+                        dailyAvgLoots = totalLoots / number_for_avg
+                        dailyAvgWins = totalWinsLoot / number_for_avg
+                        dailyAvgLosses = totalLossesLoot / number_for_avg
+
+                        dailyMax = Object.keys(totalByDayLoot).reduce((a, b) => totalByDayLoot[a].tus > totalByDayLoot[b].tus ? a : b);
+                        dailyMin = Object.keys(totalByDayLoot).filter(v => v != today).reduce((a, b) => totalByDayLoot[a].tus < totalByDayLoot[b].tus ? a : b);
+
+
+                        results_text_loot.innerHTML += '<h4>Looting</h4>'
+                        results_text_loot.innerHTML += `Total revenue: ${(totalTUSLoot / 1.0e18).toFixed(4)} TUS and ${(totalCRALoot / 1.0e18).toFixed(4)} CRA</br>`
+
+
+                        if (today in totalByDayLoot) {
+                            results_text_loot.innerHTML += `Today's revenue: ${(totalByDayLoot[today].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayLoot[today].cra / 1.0e18).toFixed(4)} CRA (${today} - ${totalByDayLoot[today].loots} loots)</br>`;
+                            results_text_loot.innerHTML += `Today's loots: ${totalByDayLoot[today].loots} being ${totalByDayLoot[today].wins} wins and ${totalByDayLoot[today].losses} losses (${Math.round(100 * totalByDayLoot[today].wins / (totalByDayLoot[today].loots))}% win rate)</br>`;
+                        } else {
+                            results_text_loot.innerHTML += `No looting activity today. Go loot!</br>`;
+
+                        }
+
+                        results_text_loot.innerHTML += `Average revenue per day: ${(dailyAvgTUS / 1.0e18).toFixed(4)} TUS and ${(dailyAvgCRA / 1.0e18).toFixed(4)} CRA</br>`;
+                        results_text_loot.innerHTML += `Best day: ${(totalByDayLoot[dailyMax].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayLoot[dailyMax].cra / 1.0e18).toFixed(4)} CRA (${dailyMax} - ${totalByDayLoot[dailyMax].loots} loots)</br>`;
+                        results_text_loot.innerHTML += `Worst day: ${(totalByDayLoot[dailyMin].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayLoot[dailyMin].cra / 1.0e18).toFixed(4)} CRA (${dailyMin} - ${totalByDayLoot[dailyMin].loots} loots)</br>`;
+                        results_text_loot.innerHTML += `Total loots: ${totalLoots} being ${totalWinsLoot} wins and ${totalLossesLoot} losses (${Math.round(100 * totalWinsLoot / (totalLoots))}% win rate)</br>`;
+                        results_text_loot.innerHTML += `Average loots per day: ${dailyAvgLoots.toFixed(1)} being on average ${dailyAvgWins.toFixed(1)} wins and ${dailyAvgLosses.toFixed(1)} losses (${Math.round(100 * dailyAvgWins / (dailyAvgLoots))}% win rate)</br>`;
+                        results_text_loot.innerHTML += `Number of teams: ${teamsLoot.length}</br>`
+                        results_text_loot.innerHTML += `</br>Daily stats:</br>`
+
+                        let labels = []
+                        let data_values = []
+                        Object.keys(totalByDayLoot).sort(function (a, b) {
+                            return moment(b, 'YYYY-MM-DD').toDate() - moment(a, 'YYYY-MM-DD').toDate();
+                        }).reverse().forEach(function (key) {
+                            labels.push(key)
+                            data_values.push((totalByDayLoot[key].tus / 1.0e18).toFixed(4))
+                            results_text_loot.innerHTML += `${key} - ${(totalByDayLoot[key].tus / 1.0e18).toFixed(4)} TUS - ${(totalByDayLoot[key].cra / 1.0e18).toFixed(4)} CRA - ${totalByDayLoot[key].loots} loots (${Math.round(100 * totalByDayLoot[key].wins / (totalByDayLoot[key].loots))}% win rate)</br>`;
+                        })
+
+                        let data = {
+                            labels: labels,
+                            datasets: [{
+                                label: 'TUS Revenue per day',
+                                backgroundColor: 'rgb(255, 99, 132)',
+                                borderColor: 'rgb(255, 99, 132)',
+                                data: data_values,
+                            }]
+                        };
+                        let chart = new Chart(document.getElementById('tus_revenue_chart_loot').getContext('2d'),
+                            {
+                                type: 'bar',
+                                data: data,
+                                options: {
+                                    scales: {
+                                        x: {
+                                            type: 'time',
+                                            time: {
+                                                unit: 'day'
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        }
-                    });
+                            });
 
+
+
+                        number_for_avg = today in totalByDayMine ? Object.keys(totalByDayMine).length - 1 : Object.keys(totalByDayMine).length
+                        number_for_avg = number_for_avg > 0 ? number_for_avg : 1
+
+                        dailyAvgTUS = totalTUSMine / number_for_avg
+                        dailyAvgCRA = totalCRAMine / number_for_avg
+                        dailyAvgMines = totalMines / number_for_avg
+                        dailyAvgWins = totalWinsMine / number_for_avg
+                        dailyAvgLosses = totalLossesMine / number_for_avg
+
+                        dailyMax = Object.keys(totalByDayMine).reduce((a, b) => totalByDayMine[a].tus > totalByDayMine[b].tus ? a : b);
+                        dailyMin = Object.keys(totalByDayMine).filter(v => v != today).reduce((a, b) => totalByDayMine[a].tus < totalByDayMine[b].tus ? a : b);
+
+
+                        results_text_mine.innerHTML += '<h4>Mining</h4>'
+                        results_text_mine.innerHTML += `Total revenue: ${(totalTUSMine / 1.0e18).toFixed(4)} TUS and ${(totalCRAMine / 1.0e18).toFixed(4)} CRA</br>`
+
+
+                        if (today in totalByDayMine) {
+                            results_text_mine.innerHTML += `Today's revenue: ${(totalByDayMine[today].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayMine[today].cra / 1.0e18).toFixed(4)} CRA (${today} - ${totalByDayMine[today].mines} mines)</br>`;
+                            results_text_mine.innerHTML += `Today's mines: ${totalByDayMine[today].mines} being ${totalByDayMine[today].wins} wins and ${totalByDayMine[today].losses} losses (${Math.round(100 * totalByDayMine[today].wins / (totalByDayMine[today].mines))}% win rate)</br>`;
+                        } else {
+                            results_text_mine.innerHTML += `No mining activity today. Go mine!</br>`;
+
+                        }
+
+                        results_text_mine.innerHTML += `Average revenue per day: ${(dailyAvgTUS / 1.0e18).toFixed(4)} TUS and ${(dailyAvgCRA / 1.0e18).toFixed(4)} CRA</br>`;
+                        results_text_mine.innerHTML += `Best day: ${(totalByDayMine[dailyMax].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayMine[dailyMax].cra / 1.0e18).toFixed(4)} CRA (${dailyMax} - ${totalByDayMine[dailyMax].mines} mines)</br>`;
+                        results_text_mine.innerHTML += `Worst day: ${(totalByDayMine[dailyMin].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayMine[dailyMin].cra / 1.0e18).toFixed(4)} CRA (${dailyMin} - ${totalByDayMine[dailyMin].mines} mines)</br>`;
+                        results_text_mine.innerHTML += `Total mines: ${totalMines} being ${totalWinsMine} wins and ${totalLossesMine} losses (${Math.round(100 * totalWinsMine / (totalMines))}% win rate)</br>`;
+                        results_text_mine.innerHTML += `Average mines per day: ${dailyAvgMines.toFixed(1)} being on average ${dailyAvgWins.toFixed(1)} wins and ${dailyAvgLosses.toFixed(1)} losses (${Math.round(100 * dailyAvgWins / (dailyAvgMines))}% win rate)</br>`;
+                        results_text_mine.innerHTML += `Number of teams: ${teamsMine.length}</br>`
+                        results_text_mine.innerHTML += `</br>Daily stats:</br>`
+
+                        labels = []
+                        data_values = []
+                        Object.keys(totalByDayMine).sort(function (a, b) {
+                            return moment(b, 'YYYY-MM-DD').toDate() - moment(a, 'YYYY-MM-DD').toDate();
+                        }).reverse().forEach(function (key) {
+                            labels.push(key)
+                            data_values.push((totalByDayMine[key].tus / 1.0e18).toFixed(4))
+                            results_text_mine.innerHTML += `${key} - ${(totalByDayMine[key].tus / 1.0e18).toFixed(4)} TUS - ${(totalByDayMine[key].cra / 1.0e18).toFixed(4)} CRA - ${totalByDayMine[key].mines} mines (${Math.round(100 * totalByDayMine[key].wins / (totalByDayMine[key].mines))}% win rate)</br>`;
+                        })
+
+                        data = {
+                            labels: labels,
+                            datasets: [{
+                                label: 'TUS Revenue per day',
+                                backgroundColor: 'rgb(255, 99, 132)',
+                                borderColor: 'rgb(255, 99, 132)',
+                                data: data_values,
+                            }]
+                        };
+                        chart = new Chart(document.getElementById('tus_revenue_chart_mine').getContext('2d'),
+                            {
+                                type: 'bar',
+                                data: data,
+                                options: {
+                                    scales: {
+                                        x: {
+                                            type: 'time',
+                                            time: {
+                                                unit: 'day'
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+
+                            
+                        results_text_tavern.innerHTML += '<h4>Renting</h4>'
+                        if (rentcrabsid.length == 0) {
+                            results_text_tavern.innerHTML += `You didn't rent yet. Go rent!`
+                        } else {
+                            number_for_avg = today in totalByDayRent ? Object.keys(totalByDayRent).length - 1 : Object.keys(totalByDayRent).length
+                            number_for_avg = number_for_avg > 0 ? number_for_avg : 1
+
+                            dailyAvg = totalTUSRent / number_for_avg
+                            dailyAvgRents = totalRents / number_for_avg
+
+                            dailyMin = Object.keys(totalByDayRent).filter(v => v != today).reduce(function (a, b) { return totalByDayRent[a].tus < totalByDayRent[b].tus ? a : b });
+                            dailyMax = Object.keys(totalByDayRent).reduce(function (a, b) { return totalByDayRent[a].tus > totalByDayRent[b].tus ? a : b });
+
+                            results_text_tavern.innerHTML += `Total revenue: ${(totalTUSRent / 1.0e18).toFixed(2)} TUS (${totalRents} rents)</br>`
+
+                            if (today in totalByDayRent) {
+                                results_text_tavern.innerHTML += `Today's revenue: ${(totalByDayRent[today].tus / 1.0e18).toFixed(2)} TUS (${totalByDayRent[today].rents} rents)</br>`;
+                            } else {
+                                results_text_tavern.innerHTML += `No renting activity today.</br>`;
+
+                            }
+                            results_text_tavern.innerHTML += `Average revenue per day: ${(dailyAvg / 1.0e18).toFixed(2)} TUS (${dailyAvgRents} rents)</br>`;
+                            results_text_tavern.innerHTML += `Best day: ${(totalByDayRent[dailyMax].tus / 1.0e18).toFixed(2)} TUS (${dailyMax} - ${totalByDayRent[dailyMax].rents} rents)</br>`;
+                            results_text_tavern.innerHTML += `Worst day: ${(totalByDayRent[dailyMin].tus / 1.0e18).toFixed(2)} TUS (${dailyMin} - ${totalByDayRent[dailyMax].rents} rents)</br>`;
+
+
+                            results_text_tavern.innerHTML += `</br>Daily stats:</br>`
+
+                            labels = []
+                            data_values = []
+                            Object.keys(totalByDayRent).sort(function (a, b) {
+                                return moment(b, 'YYYY-MM-DD').toDate() - moment(a, 'YYYY-MM-DD').toDate();
+                            }).reverse().forEach(function (key) {
+                                labels.push(key)
+                                data_values.push((totalByDayRent[key].tus / 1.0e18).toFixed(2))
+                                results_text_tavern.innerHTML += `${key} - ${(totalByDayRent[key].tus / 1.0e18).toFixed(2)} TUS - ${totalByDayRent[key].rents} rents</br>`;
+                            })
+
+                            data = {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'TUS Revenue per day',
+                                    backgroundColor: 'rgb(255, 99, 132)',
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    data: data_values,
+                                }]
+                            };
+                            chart = new Chart(document.getElementById('tus_revenue_chart_tavern').getContext('2d'),
+                                {
+                                    type: 'bar',
+                                    data: data,
+                                    options: {
+                                        scales: {
+                                            x: {
+                                                type: 'time',
+                                                time: {
+                                                    unit: 'day'
+                                                }
+                                            }
+                                        }
+                                    }
+                                });
+                        }
+
+
+                    }).catch(function (error) {
+                        console.log(error);
+                    });
             }).catch(function (error) {
                 console.log(error);
             });
     }
 
     function clearForm() {
-        let resuls_text = document.getElementById("resuls_text");
+        let results_text_mine = document.getElementById("results_text_mine");
+        let results_text_loot = document.getElementById("results_text_loot");
+        let results_text_tavern = document.getElementById("results_text_tavern");
+
         let results = document.getElementById("results");
 
-        document.getElementById("tus_revenue_chart").remove();
+        document.getElementById("tus_revenue_chart_loot").remove();
         let canvas = document.createElement('canvas');
-        canvas.setAttribute('id', 'tus_revenue_chart');
-        document.querySelector('#chart_container').appendChild(canvas);
+        canvas.setAttribute('id', 'tus_revenue_chart_loot');
+        document.querySelector('#chart_container_loot').appendChild(canvas);
 
-        resuls_text.innerHTML = "";
+        document.getElementById("tus_revenue_chart_mine").remove();
+        canvas = document.createElement('canvas');
+        canvas.setAttribute('id', 'tus_revenue_chart_mine');
+        document.querySelector('#chart_container_mine').appendChild(canvas);
+
+        document.getElementById("tus_revenue_chart_tavern").remove();
+        canvas = document.createElement('canvas');
+        canvas.setAttribute('id', 'tus_revenue_chart_tavern');
+        document.querySelector('#chart_container_tavern').appendChild(canvas);
+
+        results_text_mine.innerHTML = "";
+        results_text_loot.innerHTML = "";
+        results_text_tavern.innerHTML = "";
         results.style.display = "none";
 
         let loading = document.getElementById("loading");
