@@ -316,147 +316,160 @@
                         today = today.toISOString().split('T')[0]
 
 
-                        number_for_avg = today in totalByDayLoot ? Object.keys(totalByDayLoot).length - 1 : Object.keys(totalByDayLoot).length
-                        number_for_avg = number_for_avg > 0 ? number_for_avg : 1
+                        if (Object.keys(totalByDayLoot).length > 0) {
 
-                        dailyAvgTUS = totalTUSLoot / number_for_avg
-                        dailyAvgCRA = totalCRALoot / number_for_avg
-                        dailyAvgLoots = totalLoots / number_for_avg
-                        dailyAvgWins = totalWinsLoot / number_for_avg
-                        dailyAvgLosses = totalLossesLoot / number_for_avg
+                            number_for_avg = today in totalByDayLoot ? Object.keys(totalByDayLoot).length - 1 : Object.keys(totalByDayLoot).length
+                            number_for_avg = number_for_avg > 0 ? number_for_avg : 1
 
-                        dailyMax = Object.keys(totalByDayLoot).reduce((a, b) => totalByDayLoot[a].tus > totalByDayLoot[b].tus ? a : b);
-                        dailyMin = Object.keys(totalByDayLoot).filter(v => v != today).reduce((a, b) => totalByDayLoot[a].tus < totalByDayLoot[b].tus ? a : b);
+                            dailyAvgTUS = totalTUSLoot / number_for_avg
+                            dailyAvgCRA = totalCRALoot / number_for_avg
+                            dailyAvgLoots = totalLoots / number_for_avg
+                            dailyAvgWins = totalWinsLoot / number_for_avg
+                            dailyAvgLosses = totalLossesLoot / number_for_avg
 
-
-                        results_text_loot.innerHTML += '<h4>Looting</h4>'
-                        results_text_loot.innerHTML += `Total revenue: ${(totalTUSLoot / 1.0e18).toFixed(4)} TUS and ${(totalCRALoot / 1.0e18).toFixed(4)} CRA</br>`
+                            dailyMax = Object.keys(totalByDayLoot).reduce((a, b) => totalByDayLoot[a].tus > totalByDayLoot[b].tus ? a : b);
+                            dailyMin = Object.keys(totalByDayLoot).filter(v => v != today).reduce((a, b) => totalByDayLoot[a].tus < totalByDayLoot[b].tus ? a : b);
 
 
-                        if (today in totalByDayLoot) {
-                            results_text_loot.innerHTML += `Today's revenue: ${(totalByDayLoot[today].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayLoot[today].cra / 1.0e18).toFixed(4)} CRA (${today} - ${totalByDayLoot[today].loots} loots)</br>`;
-                            results_text_loot.innerHTML += `Today's loots: ${totalByDayLoot[today].loots} being ${totalByDayLoot[today].wins} wins and ${totalByDayLoot[today].losses} losses (${Math.round(100 * totalByDayLoot[today].wins / (totalByDayLoot[today].loots))}% win rate)</br>`;
-                        } else {
-                            results_text_loot.innerHTML += `No looting activity today. Go loot!</br>`;
+                            results_text_loot.innerHTML += '<h4>Looting</h4>'
+                            results_text_loot.innerHTML += `Total revenue: ${(totalTUSLoot / 1.0e18).toFixed(4)} TUS and ${(totalCRALoot / 1.0e18).toFixed(4)} CRA</br>`
 
-                        }
 
-                        results_text_loot.innerHTML += `Average revenue per day: ${(dailyAvgTUS / 1.0e18).toFixed(4)} TUS and ${(dailyAvgCRA / 1.0e18).toFixed(4)} CRA</br>`;
-                        results_text_loot.innerHTML += `Best day: ${(totalByDayLoot[dailyMax].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayLoot[dailyMax].cra / 1.0e18).toFixed(4)} CRA (${dailyMax} - ${totalByDayLoot[dailyMax].loots} loots)</br>`;
-                        results_text_loot.innerHTML += `Worst day: ${(totalByDayLoot[dailyMin].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayLoot[dailyMin].cra / 1.0e18).toFixed(4)} CRA (${dailyMin} - ${totalByDayLoot[dailyMin].loots} loots)</br>`;
-                        results_text_loot.innerHTML += `Total loots: ${totalLoots} being ${totalWinsLoot} wins and ${totalLossesLoot} losses (${Math.round(100 * totalWinsLoot / (totalLoots))}% win rate)</br>`;
-                        results_text_loot.innerHTML += `Average loots per day: ${dailyAvgLoots.toFixed(1)} being on average ${dailyAvgWins.toFixed(1)} wins and ${dailyAvgLosses.toFixed(1)} losses (${Math.round(100 * dailyAvgWins / (dailyAvgLoots))}% win rate)</br>`;
-                        results_text_loot.innerHTML += `Number of teams: ${teamsLoot.length}</br>`
-                        results_text_loot.innerHTML += `</br>Daily stats:</br>`
+                            if (today in totalByDayLoot) {
+                                results_text_loot.innerHTML += `Today's revenue: ${(totalByDayLoot[today].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayLoot[today].cra / 1.0e18).toFixed(4)} CRA (${today} - ${totalByDayLoot[today].loots} loots)</br>`;
+                                results_text_loot.innerHTML += `Today's loots: ${totalByDayLoot[today].loots} being ${totalByDayLoot[today].wins} wins and ${totalByDayLoot[today].losses} losses (${Math.round(100 * totalByDayLoot[today].wins / (totalByDayLoot[today].loots))}% win rate)</br>`;
+                            } else {
+                                results_text_loot.innerHTML += `No looting activity today. Go loot!</br>`;
 
-                        let labels = []
-                        let data_values = []
-                        Object.keys(totalByDayLoot).sort(function (a, b) {
-                            return moment(b, 'YYYY-MM-DD').toDate() - moment(a, 'YYYY-MM-DD').toDate();
-                        }).reverse().forEach(function (key) {
-                            labels.push(key)
-                            data_values.push((totalByDayLoot[key].tus / 1.0e18).toFixed(4))
-                            results_text_loot.innerHTML += `${key} - ${(totalByDayLoot[key].tus / 1.0e18).toFixed(4)} TUS - ${(totalByDayLoot[key].cra / 1.0e18).toFixed(4)} CRA - ${totalByDayLoot[key].loots} loots (${Math.round(100 * totalByDayLoot[key].wins / (totalByDayLoot[key].loots))}% win rate)</br>`;
-                        })
+                            }
 
-                        let data = {
-                            labels: labels,
-                            datasets: [{
-                                label: 'TUS Revenue per day',
-                                backgroundColor: 'rgb(255, 99, 132)',
-                                borderColor: 'rgb(255, 99, 132)',
-                                data: data_values,
-                            }]
-                        };
-                        let chart = new Chart(document.getElementById('tus_revenue_chart_loot').getContext('2d'),
-                            {
-                                type: 'bar',
-                                data: data,
-                                options: {
-                                    scales: {
-                                        x: {
-                                            type: 'time',
-                                            time: {
-                                                unit: 'day'
+                            results_text_loot.innerHTML += `Average revenue per day: ${(dailyAvgTUS / 1.0e18).toFixed(4)} TUS and ${(dailyAvgCRA / 1.0e18).toFixed(4)} CRA</br>`;
+                            results_text_loot.innerHTML += `Best day: ${(totalByDayLoot[dailyMax].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayLoot[dailyMax].cra / 1.0e18).toFixed(4)} CRA (${dailyMax} - ${totalByDayLoot[dailyMax].loots} loots)</br>`;
+                            results_text_loot.innerHTML += `Worst day: ${(totalByDayLoot[dailyMin].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayLoot[dailyMin].cra / 1.0e18).toFixed(4)} CRA (${dailyMin} - ${totalByDayLoot[dailyMin].loots} loots)</br>`;
+                            results_text_loot.innerHTML += `Total loots: ${totalLoots} being ${totalWinsLoot} wins and ${totalLossesLoot} losses (${Math.round(100 * totalWinsLoot / (totalLoots))}% win rate)</br>`;
+                            results_text_loot.innerHTML += `Average loots per day: ${dailyAvgLoots.toFixed(1)} being on average ${dailyAvgWins.toFixed(1)} wins and ${dailyAvgLosses.toFixed(1)} losses (${Math.round(100 * dailyAvgWins / (dailyAvgLoots))}% win rate)</br>`;
+                            results_text_loot.innerHTML += `Number of teams: ${teamsLoot.length}</br>`
+                            results_text_loot.innerHTML += `</br>Daily stats:</br>`
+
+                            let labels = []
+                            let data_values = []
+                            Object.keys(totalByDayLoot).sort(function (a, b) {
+                                return moment(b, 'YYYY-MM-DD').toDate() - moment(a, 'YYYY-MM-DD').toDate();
+                            }).reverse().forEach(function (key) {
+                                labels.push(key)
+                                data_values.push((totalByDayLoot[key].tus / 1.0e18).toFixed(4))
+                                results_text_loot.innerHTML += `${key} - ${(totalByDayLoot[key].tus / 1.0e18).toFixed(4)} TUS - ${(totalByDayLoot[key].cra / 1.0e18).toFixed(4)} CRA - ${totalByDayLoot[key].loots} loots (${Math.round(100 * totalByDayLoot[key].wins / (totalByDayLoot[key].loots))}% win rate)</br>`;
+                            })
+
+                            if (!(today in totalByDayLoot)) {
+                                labels.push(today)
+                                data_values.push(0)
+                            }
+
+
+                            let data = {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'TUS Revenue per day',
+                                    backgroundColor: 'rgb(255, 99, 132)',
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    data: data_values,
+                                }]
+                            };
+                            let chart = new Chart(document.getElementById('tus_revenue_chart_loot').getContext('2d'),
+                                {
+                                    type: 'bar',
+                                    data: data,
+                                    options: {
+                                        scales: {
+                                            x: {
+                                                type: 'time',
+                                                time: {
+                                                    unit: 'day'
+                                                }
                                             }
                                         }
                                     }
-                                }
-                            });
-
-
-
-                        number_for_avg = today in totalByDayMine ? Object.keys(totalByDayMine).length - 1 : Object.keys(totalByDayMine).length
-                        number_for_avg = number_for_avg > 0 ? number_for_avg : 1
-
-                        dailyAvgTUS = totalTUSMine / number_for_avg
-                        dailyAvgCRA = totalCRAMine / number_for_avg
-                        dailyAvgMines = totalMines / number_for_avg
-                        dailyAvgWins = totalWinsMine / number_for_avg
-                        dailyAvgLosses = totalLossesMine / number_for_avg
-
-                        dailyMax = Object.keys(totalByDayMine).reduce((a, b) => totalByDayMine[a].tus > totalByDayMine[b].tus ? a : b);
-                        dailyMin = Object.keys(totalByDayMine).filter(v => v != today).reduce((a, b) => totalByDayMine[a].tus < totalByDayMine[b].tus ? a : b);
-
-
-                        results_text_mine.innerHTML += '<h4>Mining</h4>'
-                        results_text_mine.innerHTML += `Total revenue: ${(totalTUSMine / 1.0e18).toFixed(4)} TUS and ${(totalCRAMine / 1.0e18).toFixed(4)} CRA</br>`
-
-
-                        if (today in totalByDayMine) {
-                            results_text_mine.innerHTML += `Today's revenue: ${(totalByDayMine[today].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayMine[today].cra / 1.0e18).toFixed(4)} CRA (${today} - ${totalByDayMine[today].mines} mines)</br>`;
-                            results_text_mine.innerHTML += `Today's mines: ${totalByDayMine[today].mines} being ${totalByDayMine[today].wins} wins and ${totalByDayMine[today].losses} losses (${Math.round(100 * totalByDayMine[today].wins / (totalByDayMine[today].mines))}% win rate)</br>`;
-                        } else {
-                            results_text_mine.innerHTML += `No mining activity today. Go mine!</br>`;
-
+                                });
                         }
 
-                        results_text_mine.innerHTML += `Average revenue per day: ${(dailyAvgTUS / 1.0e18).toFixed(4)} TUS and ${(dailyAvgCRA / 1.0e18).toFixed(4)} CRA</br>`;
-                        results_text_mine.innerHTML += `Best day: ${(totalByDayMine[dailyMax].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayMine[dailyMax].cra / 1.0e18).toFixed(4)} CRA (${dailyMax} - ${totalByDayMine[dailyMax].mines} mines)</br>`;
-                        results_text_mine.innerHTML += `Worst day: ${(totalByDayMine[dailyMin].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayMine[dailyMin].cra / 1.0e18).toFixed(4)} CRA (${dailyMin} - ${totalByDayMine[dailyMin].mines} mines)</br>`;
-                        results_text_mine.innerHTML += `Total mines: ${totalMines} being ${totalWinsMine} wins and ${totalLossesMine} losses (${Math.round(100 * totalWinsMine / (totalMines))}% win rate)</br>`;
-                        results_text_mine.innerHTML += `Average mines per day: ${dailyAvgMines.toFixed(1)} being on average ${dailyAvgWins.toFixed(1)} wins and ${dailyAvgLosses.toFixed(1)} losses (${Math.round(100 * dailyAvgWins / (dailyAvgMines))}% win rate)</br>`;
-                        results_text_mine.innerHTML += `Number of teams: ${teamsMine.length}</br>`
-                        results_text_mine.innerHTML += `</br>Daily stats:</br>`
+                        if (Object.keys(totalByDayMine).length > 0) {
+                            number_for_avg = today in totalByDayMine ? Object.keys(totalByDayMine).length - 1 : Object.keys(totalByDayMine).length
+                            number_for_avg = number_for_avg > 0 ? number_for_avg : 1
 
-                        labels = []
-                        data_values = []
-                        Object.keys(totalByDayMine).sort(function (a, b) {
-                            return moment(b, 'YYYY-MM-DD').toDate() - moment(a, 'YYYY-MM-DD').toDate();
-                        }).reverse().forEach(function (key) {
-                            labels.push(key)
-                            data_values.push((totalByDayMine[key].tus / 1.0e18).toFixed(4))
-                            results_text_mine.innerHTML += `${key} - ${(totalByDayMine[key].tus / 1.0e18).toFixed(4)} TUS - ${(totalByDayMine[key].cra / 1.0e18).toFixed(4)} CRA - ${totalByDayMine[key].mines} mines (${Math.round(100 * totalByDayMine[key].wins / (totalByDayMine[key].mines))}% win rate)</br>`;
-                        })
+                            dailyAvgTUS = totalTUSMine / number_for_avg
+                            dailyAvgCRA = totalCRAMine / number_for_avg
+                            dailyAvgMines = totalMines / number_for_avg
+                            dailyAvgWins = totalWinsMine / number_for_avg
+                            dailyAvgLosses = totalLossesMine / number_for_avg
 
-                        data = {
-                            labels: labels,
-                            datasets: [{
-                                label: 'TUS Revenue per day',
-                                backgroundColor: 'rgb(255, 99, 132)',
-                                borderColor: 'rgb(255, 99, 132)',
-                                data: data_values,
-                            }]
-                        };
-                        chart = new Chart(document.getElementById('tus_revenue_chart_mine').getContext('2d'),
-                            {
-                                type: 'bar',
-                                data: data,
-                                options: {
-                                    scales: {
-                                        x: {
-                                            type: 'time',
-                                            time: {
-                                                unit: 'day'
+                            dailyMax = Object.keys(totalByDayMine).reduce((a, b) => totalByDayMine[a].tus > totalByDayMine[b].tus ? a : b);
+                            dailyMin = Object.keys(totalByDayMine).filter(v => v != today).reduce((a, b) => totalByDayMine[a].tus < totalByDayMine[b].tus ? a : b);
+
+
+                            results_text_mine.innerHTML += '<h4>Mining</h4>'
+                            results_text_mine.innerHTML += `Total revenue: ${(totalTUSMine / 1.0e18).toFixed(4)} TUS and ${(totalCRAMine / 1.0e18).toFixed(4)} CRA</br>`
+
+
+                            if (today in totalByDayMine) {
+                                results_text_mine.innerHTML += `Today's revenue: ${(totalByDayMine[today].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayMine[today].cra / 1.0e18).toFixed(4)} CRA (${today} - ${totalByDayMine[today].mines} mines)</br>`;
+                                results_text_mine.innerHTML += `Today's mines: ${totalByDayMine[today].mines} being ${totalByDayMine[today].wins} wins and ${totalByDayMine[today].losses} losses (${Math.round(100 * totalByDayMine[today].wins / (totalByDayMine[today].mines))}% win rate)</br>`;
+                            } else {
+                                results_text_mine.innerHTML += `No mining activity today. Go mine!</br>`;
+
+                            }
+
+                            results_text_mine.innerHTML += `Average revenue per day: ${(dailyAvgTUS / 1.0e18).toFixed(4)} TUS and ${(dailyAvgCRA / 1.0e18).toFixed(4)} CRA</br>`;
+                            results_text_mine.innerHTML += `Best day: ${(totalByDayMine[dailyMax].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayMine[dailyMax].cra / 1.0e18).toFixed(4)} CRA (${dailyMax} - ${totalByDayMine[dailyMax].mines} mines)</br>`;
+                            results_text_mine.innerHTML += `Worst day: ${(totalByDayMine[dailyMin].tus / 1.0e18).toFixed(4)} TUS and ${(totalByDayMine[dailyMin].cra / 1.0e18).toFixed(4)} CRA (${dailyMin} - ${totalByDayMine[dailyMin].mines} mines)</br>`;
+                            results_text_mine.innerHTML += `Total mines: ${totalMines} being ${totalWinsMine} wins and ${totalLossesMine} losses (${Math.round(100 * totalWinsMine / (totalMines))}% win rate)</br>`;
+                            results_text_mine.innerHTML += `Average mines per day: ${dailyAvgMines.toFixed(1)} being on average ${dailyAvgWins.toFixed(1)} wins and ${dailyAvgLosses.toFixed(1)} losses (${Math.round(100 * dailyAvgWins / (dailyAvgMines))}% win rate)</br>`;
+                            results_text_mine.innerHTML += `Number of teams: ${teamsMine.length}</br>`
+                            results_text_mine.innerHTML += `</br>Daily stats:</br>`
+
+                            labels = []
+                            data_values = []
+                            Object.keys(totalByDayMine).sort(function (a, b) {
+                                return moment(b, 'YYYY-MM-DD').toDate() - moment(a, 'YYYY-MM-DD').toDate();
+                            }).reverse().forEach(function (key) {
+                                labels.push(key)
+                                data_values.push((totalByDayMine[key].tus / 1.0e18).toFixed(4))
+                                results_text_mine.innerHTML += `${key} - ${(totalByDayMine[key].tus / 1.0e18).toFixed(4)} TUS - ${(totalByDayMine[key].cra / 1.0e18).toFixed(4)} CRA - ${totalByDayMine[key].mines} mines (${Math.round(100 * totalByDayMine[key].wins / (totalByDayMine[key].mines))}% win rate)</br>`;
+                            })
+
+                            if (!(today in totalByDayMine)) {
+                                labels.push(today)
+                                data_values.push(0)
+                            }
+
+                            data = {
+                                labels: labels,
+                                datasets: [{
+                                    label: 'TUS Revenue per day',
+                                    backgroundColor: 'rgb(255, 99, 132)',
+                                    borderColor: 'rgb(255, 99, 132)',
+                                    data: data_values,
+                                }]
+                            };
+                            chart = new Chart(document.getElementById('tus_revenue_chart_mine').getContext('2d'),
+                                {
+                                    type: 'bar',
+                                    data: data,
+                                    options: {
+                                        scales: {
+                                            x: {
+                                                type: 'time',
+                                                time: {
+                                                    unit: 'day'
+                                                }
                                             }
                                         }
                                     }
-                                }
-                            });
+                                });
+                        }
 
-                            
                         results_text_tavern.innerHTML += '<h4>Renting</h4>'
-                        if (rentcrabsid.length == 0) {
+                        if (Object.keys(totalByDayRent).length === 0) {
                             results_text_tavern.innerHTML += `You didn't rent yet. Go rent!`
                         } else {
                             number_for_avg = today in totalByDayRent ? Object.keys(totalByDayRent).length - 1 : Object.keys(totalByDayRent).length
@@ -492,6 +505,11 @@
                                 data_values.push((totalByDayRent[key].tus / 1.0e18).toFixed(2))
                                 results_text_tavern.innerHTML += `${key} - ${(totalByDayRent[key].tus / 1.0e18).toFixed(2)} TUS - ${totalByDayRent[key].rents} rents</br>`;
                             })
+
+                            if (!(today in totalByDayRent)) {
+                                labels.push(today)
+                                data_values.push(0)
+                            }
 
                             data = {
                                 labels: labels,
