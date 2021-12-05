@@ -365,7 +365,7 @@
                             let statsloot = ''
                             statsloot += `<table><tbody>`
 
-                                statsloot += `<tr><td>Total revenue</td><td>${(totalTUSLoot / 1.0e18).toFixed(4)} TUS and ${(totalCRALoot / 1.0e18).toFixed(4)} CRA</td></tr>`
+                            statsloot += `<tr><td>Total revenue</td><td>${(totalTUSLoot / 1.0e18).toFixed(4)} TUS and ${(totalCRALoot / 1.0e18).toFixed(4)} CRA</td></tr>`
 
 
                             if (today in totalByDayLoot) {
@@ -387,7 +387,7 @@
                             results_text_loot.innerHTML += statsloot
 
 
-                            results_text_loot += `</br>Daily stats:</br>`
+                            results_text_loot.innerHTML += `</br>Daily stats:</br>`
 
                             let labels = []
                             let data_values = []
