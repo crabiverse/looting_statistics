@@ -551,7 +551,7 @@
                             }
                             statstavern += `<tr><td>Average revenue per day</td><td>${(dailyAvg / 1.0e18).toFixed(2)} TUS (${dailyAvgRents} rents)</td></tr>`;
                             statstavern += `<tr><td>Best day</td><td>${(totalByDayRent[dailyMax].tus / 1.0e18).toFixed(2)} TUS (${dailyMax} - ${totalByDayRent[dailyMax].rents} rents)</td></tr>`;
-                            statstavern += `<tr><td>Worst day</td><td>${(totalByDayRent[dailyMin].tus / 1.0e18).toFixed(2)} TUS (${dailyMin} - ${totalByDayRent[dailyMax].rents} rents)</td></tr>`;
+                            statstavern += `<tr><td>Worst day</td><td>${(totalByDayRent[dailyMin].tus / 1.0e18).toFixed(2)} TUS (${dailyMin} - ${totalByDayRent[dailyMin].rents} rents)</td></tr>`;
 
                             statstavern += "</tbody></table></br>"
                             results_text_tavern.innerHTML += statstavern
