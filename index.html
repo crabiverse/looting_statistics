@@ -277,6 +277,12 @@
 
         Promise.all(requests)
             .then(function (responses) {
+                responses.forEach(r => {
+                    if (r.error_code) {
+                        let err = `${r.error_code} - ${r.message}`
+                        throw err
+                    }
+                })
                 const loots = responses[0]["result"]["data"]
 
                 if (loots.length == 0) {
@@ -402,6 +408,12 @@
 
                 Promise.all(requestscrab)
                     .then(function (responses) {
+                        responses.forEach(r => {
+                            if (r.error_code) {
+                                let err = `${r.error_code} - ${r.message}`
+                                throw err
+                            }
+                        })
                         responses.forEach(response => {
                             const transactions = response["result"]["data"]
                             transactions.forEach(t => {
@@ -831,10 +843,12 @@
 
                     }).catch(function (error) {
                         console.log(error);
+                        loading.innerHTML = error
                     });
             }).catch(function (error) {
                 console.log(error);
-            });
+                loading.innerHTML = error
+            })
     }
 
     function clearForm() {
