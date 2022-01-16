@@ -451,7 +451,7 @@
 
                             dailyMax = Object.keys(totalByDayLoot).reduce((a, b) => totalByDayLoot[a].tus > totalByDayLoot[b].tus ? a : b);
                             dailyMinFilter = Object.keys(totalByDayLoot).filter(v => v != today)
-                            dailyMin = dailyMinFilter.length > 0 ? dailyMinFilter.reduce((a, b) => totalByDayLoot[a].tus < totalByDayLoot[b].tus ? a : b) : 0
+                            dailyMin = dailyMinFilter.length > 0 ? dailyMinFilter.reduce((a, b) => totalByDayLoot[a].tus < totalByDayLoot[b].tus ? a : b) : today
 
                             let statsloot = ''
                             statsloot += `<table><tbody>`
@@ -542,7 +542,7 @@
 
                             dailyMax = Object.keys(totalByDayMine).reduce((a, b) => totalByDayMine[a].tus > totalByDayMine[b].tus ? a : b);
                             dailyMinFilter = Object.keys(totalByDayMine).filter(v => v != today)
-                            dailyMin = dailyMinFilter.length > 0 ? dailyMinFilter.reduce((a, b) => totalByDayMine[a].tus < totalByDayMine[b].tus ? a : b) : 0
+                            dailyMin = dailyMinFilter.length > 0 ? dailyMinFilter.reduce((a, b) => totalByDayMine[a].tus < totalByDayMine[b].tus ? a : b) : today
 
                             let statsmine = ''
                             statsmine += `<table><tbody>`
@@ -630,7 +630,7 @@
                             dailyAvgRents = totalRents / number_for_avg
 
                             dailyMinFilter = Object.keys(totalByDayRent).filter(v => v != today)
-                            dailyMin = dailyMinFilter.length > 0 ? dailyMinFilter.reduce((a, b) => totalByDayRent[a].tus < totalByDayRent[b].tus ? a : b) : 0
+                            dailyMin = dailyMinFilter.length > 0 ? dailyMinFilter.reduce((a, b) => totalByDayRent[a].tus < totalByDayRent[b].tus ? a : b) : today
 
                             dailyMax = Object.keys(totalByDayRent).reduce(function (a, b) { return totalByDayRent[a].tus > totalByDayRent[b].tus ? a : b });
 
@@ -777,7 +777,7 @@
                             dailyAvgCRA = totalCRA / number_for_avg
 
                             dailyMinFilter = Object.keys(summary).filter(v => v != today)
-                            dailyMin = dailyMinFilter.length > 0 ? dailyMinFilter.reduce((a, b) => summary[a].total_tus < summary[b].total_tus ? a : b) : 0
+                            dailyMin = dailyMinFilter.length > 0 ? dailyMinFilter.reduce((a, b) => summary[a].total_tus < summary[b].total_tus ? a : b) : today
 
                             dailyMax = Object.keys(summary).reduce(function (a, b) { return summary[a].total_tus > summary[b].total_tus ? a : b });
 
