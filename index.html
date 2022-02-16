@@ -499,17 +499,19 @@
                         }
 
                         pages_crabsinteams = r["result"]["data"]
-                        pages_crabsinteams.forEach(c => {
-                            if (c.crabada_id_1) {
-                                rentcrabsid.push(c.crabada_id_1)
-                            }
-                            if (c.crabada_id_2) {
-                                rentcrabsid.push(c.crabada_id_2)
-                            }
-                            if (c.crabada_id_3) {
-                                rentcrabsid.push(c.crabada_id_3)
-                            }
-                        })
+                        if (pages_crabsinteams) {
+                            pages_crabsinteams.forEach(c => {
+                                if (c.crabada_id_1) {
+                                    rentcrabsid.push(c.crabada_id_1)
+                                }
+                                if (c.crabada_id_2) {
+                                    rentcrabsid.push(c.crabada_id_2)
+                                }
+                                if (c.crabada_id_3) {
+                                    rentcrabsid.push(c.crabada_id_3)
+                                }
+                            })
+                        }
                     })
                     updateData("crabsinteams");
                 }).catch(function (error) {
