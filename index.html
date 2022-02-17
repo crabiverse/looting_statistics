@@ -413,14 +413,13 @@
                             }
 
                         })
-
-                        updateData("mining");
                     })
                 }).catch(function (error) {
                     console.error(error);
                     loading.innerHTML = error
                 });
             }
+            updateData("mining");
 
 
             const outofgame = responses[2]["result"]["data"] || []
@@ -444,14 +443,12 @@
                             rentcrabsid.push(c.crabada_id)
                         })
                     })
-                    updateData("outofgame");
                 }).catch(function (error) {
                     console.error(error);
                     loading.innerHTML = error
                 });
-            } else {
-                updateData("outofgame");
             }
+            updateData("outofgame");
 
 
             const forlending = responses[3]["result"]["data"] || []
@@ -474,14 +471,12 @@
                             rentcrabsid.push(c.crabada_id)
                         })
                     })
-                    updateData("forlending");
                 }).catch(function (error) {
                     console.error(error);
                     loading.innerHTML = error
                 });
-            } else {
-              updateData("forlending");
             }
+            updateData("forlending");
 
             const crabsinteams = responses[4]["result"]["data"] || []
             if (crabsinteams.length > 0) {
@@ -513,14 +508,13 @@
                             })
                         }
                     })
-                    updateData("crabsinteams");
                 }).catch(function (error) {
                     console.error(error);
                     loading.innerHTML = error
                 });
-            } else {
-              updateData("crabsinteams");
             }
+            updateData("crabsinteams");
+
 
             let rentcrabsidPromise = new Promise((resolve, reject) => {
                 let dataInterval = setInterval(function(){
